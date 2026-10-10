@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Views
   const authView = document.getElementById('auth-view');
   const dashboardView = document.getElementById('dashboard-view');
-  
+
   // Navigation
   const navControls = document.getElementById('nav-controls');
   const userDisplayName = document.getElementById('user-display-name');
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const showToast = (message, type = 'info') => {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     let iconClass = 'fa-circle-info';
     if (type === 'success') iconClass = 'fa-circle-check';
     if (type === 'error') iconClass = 'fa-circle-exclamation';
@@ -151,11 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+
+
     // Trigger interval 1: 24 hours before
     scheduleReminder('24 hours remaining', 24 * 60 * 60 * 1000);
 
     // Trigger interval 2: 2.5 hours before
     scheduleReminder('2.5 hours remaining', 2.5 * 60 * 60 * 1000);
+
+
 
     if (timeouts.length > 0) {
       scheduledNotifications.set(opp._id, timeouts);
@@ -195,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dashboardView.style.display = 'block';
     navControls.style.display = 'flex';
     userDisplayName.textContent = currentUser.name;
-    
+
     // Explicitly request notification permissions immediately upon dashboard access
     requestNotificationPermission();
 
@@ -256,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         currentUser = data.user;
         showToast(`Welcome back, ${currentUser.name}!`, 'success');
@@ -331,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/api/opportunities/stats');
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         renderStats(data.stats);
       }
@@ -359,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok && data.success) {
         activeOpportunities = data.data;
-        
+
         // Schedule browser notifications for all active items
         activeOpportunities.forEach(opp => {
           scheduleOpportunityNotifications(opp);
@@ -384,13 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Render Recent Opportunities sidebar
     recentActivityList.innerHTML = '';
-    
+
     if (stats.recentActivity && stats.recentActivity.length > 0) {
       stats.recentActivity.forEach(opp => {
         const item = document.createElement('div');
         item.className = 'activity-item';
         item.setAttribute('data-status', opp.wantToApply ? opp.status : 'None');
-        
+
         const intentText = opp.wantToApply ? `(${opp.status})` : '(No Intent)';
         item.innerHTML = `
           <div class="activity-marker" style="${!opp.wantToApply ? 'background-color: #9ca3af' : ''}"></div>
@@ -412,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const renderOpportunitiesList = () => {
     jobsListContainer.innerHTML = '';
-    
+
     if (activeOpportunities.length === 0) {
       jobsTable.style.display = 'none';
       emptyState.style.display = 'flex';
@@ -424,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     activeOpportunities.forEach(opp => {
       const row = document.createElement('tr');
-      
+
       // Calculate remaining hours for deadline highlighting
       const deadlineDate = new Date(opp.deadline);
       const diffMs = deadlineDate.getTime() - Date.now();
@@ -435,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const deadlineClass = isUrgent ? 'deadline-urgent' : '';
 
       // URL display logic
-      const linkHTML = opp.link 
+      const linkHTML = opp.link
         ? `<a href="${escapeHTML(opp.link)}" target="_blank" class="table-link" title="Open Link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a>`
         : '—';
 
@@ -458,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isLocked) {
         intentBadgeHTML = `<span class="intent-yes-badge" style="cursor: not-allowed; opacity: 0.85;" title="Intent is locked once status is changed from Pending"><i class="fa-solid fa-lock"></i> Yes</span>`;
       } else {
-        intentBadgeHTML = opp.wantToApply 
+        intentBadgeHTML = opp.wantToApply
           ? `<span class="intent-yes-badge inline-intent-btn" data-id="${opp._id}"><i class="fa-solid fa-check"></i> Yes</span>`
           : `<span class="intent-no-badge inline-intent-btn" data-id="${opp._id}"><i class="fa-solid fa-xmark"></i> No</span>`;
       }
@@ -491,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Event listeners for action buttons
       row.querySelector('.edit-btn').addEventListener('click', () => openEditModal(opp));
       row.querySelector('.delete-btn').addEventListener('click', () => openDeleteModal(opp));
-      
+
       // Inline Intent toggle click listener
       if (!isLocked) {
         row.querySelector('.inline-intent-btn').addEventListener('click', () => handleInlineToggle(opp._id));
@@ -514,14 +518,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok && data.success) {
         showToast('Application intent updated.', 'success');
-        
+
         // Immediately trigger notification sync & update counts
         if (!data.data.wantToApply) {
           cancelScheduledNotifications(id);
         } else {
           scheduleOpportunityNotifications(data.data);
         }
-        
+
         loadDashboardData();
       } else {
         showToast(data.message || 'Error updating intent', 'error');
@@ -581,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTitle.textContent = 'Add Opportunity';
     jobIdInput.value = '';
     jobForm.reset();
-    
+
     // Default form toggles
     modalWantApply.checked = true;
     modalWantApply.disabled = false;
@@ -590,17 +594,17 @@ document.addEventListener('DOMContentLoaded', () => {
     modalStatus.style.opacity = '1';
 
     // Prefill datetime-local input to tomorrow at 12:00 PM (local time)
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(12, 0, 0, 0);
+    // const tomorrow = new Date();
+    // tomorrow.setDate(tomorrow.getDate() + 1);
+    // tomorrow.setHours(12, 0, 0, 0);
 
-    const year = tomorrow.getFullYear();
-    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const day = String(tomorrow.getDate()).padStart(2, '0');
-    const hours = String(tomorrow.getHours()).padStart(2, '0');
-    const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
-    modalDeadline.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-    
+    // const year = tomorrow.getFullYear();
+    // const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    // const day = String(tomorrow.getDate()).padStart(2, '0');
+    // const hours = String(tomorrow.getHours()).padStart(2, '0');
+    // const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+    // modalDeadline.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
     jobModal.style.display = 'flex';
   };
 
@@ -608,11 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
     editMode = true;
     modalTitle.textContent = 'Edit Opportunity';
     jobIdInput.value = opp._id;
-    
+
     modalCompany.value = opp.companyName;
     modalRole.value = opp.role;
     modalLink.value = opp.link || '';
-    
+
     // Set Datetime local input correctly in YYYY-MM-DDThh:mm format
     if (opp.deadline) {
       const date = new Date(opp.deadline);
@@ -628,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modalStatus.value = opp.status;
     modalWantApply.checked = opp.wantToApply;
-    
+
     if (opp.status !== 'Pending') {
       modalWantApply.checked = true;
       modalWantApply.disabled = true;
@@ -649,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modalNotes.value = opp.description || '';
-    
+
     jobModal.style.display = 'flex';
   };
 
@@ -734,10 +738,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok && data.success) {
         showToast('Opportunity deleted successfully.', 'success');
-        
+
         // Cancel all scheduled alerts for this item
         cancelScheduledNotifications(opportunityToDeleteId);
-        
+
         closeDeleteModal();
         loadDashboardData();
       } else {
@@ -765,7 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formatDateTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
-    
+
     // Formats into local Date and Time: e.g. "Jun 28, 2026, 12:00 PM"
     return date.toLocaleString(undefined, {
       year: 'numeric',
@@ -789,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const escapeHTML = (str) => {
     if (!str) return '';
-    return str.replace(/[&<>'"]/g, 
+    return str.replace(/[&<>'"]/g,
       tag => ({
         '&': '&amp;',
         '<': '&lt;',
